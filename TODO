@@ -1,0 +1,6 @@
+// 090723
+
+- Make taquilla-admin.php disappear from plugin page
+- Check field validity for "Add/Edit" movie form (e.g., decimal numbers)
+- Change movie shortcode to catch <strong>Title</strong> as well
+- Add "Screen options" to taquilla_manage_page to hide/show columns

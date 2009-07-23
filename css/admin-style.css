@@ -1,0 +1,19 @@
+/******************************************
+* This CSS file belongs to the Admin part *
+* of Taquilla 0.1! PLEASE DO NOT *
+* make any changes here! Thank you!       *
+******************************************/
+
+/* OWN PLUGIN STYLES */
+
+.taquilla-movie-title { font-weight: bold; }
+.taquilla-movie-year  { font-style: italic; }
+
+/* OVERRIDE EXISTING WP STYLES */
+
+/* overwrite 980px max-width in WP < 2.7 */
+div.wrap { max-width: 100%!important; }
+
+.widefat tbody th.check-column {
+	padding: 0!important;
+}
