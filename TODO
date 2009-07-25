@@ -4,3 +4,10 @@
 - Check field validity for "Add/Edit" movie form (e.g., decimal numbers)
 - Change movie shortcode to catch <strong>Title</strong> as well
 - Add "Screen options" to taquilla_manage_page to hide/show columns
+
+// 090725
+
+- Improve the folder structure and class inclusion in php/
+- Clean out function in main file that are now in included classes
+- Create a proper plug-in to manage SQL tables from WP admin panel
+- Include a calendar widget to select periods for results

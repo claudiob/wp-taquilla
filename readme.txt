@@ -9,7 +9,9 @@ Taquilla enables you to create and manage movies and results in your WP's admin 
 
 Taquilla enables you to create and manage movies and results in your WP's admin area. No HTML knowledge is needed. A comfortable backend allows to easily edit movie data. You can include the movies into your posts, on your pages or in text widgets by using a shortcode or a template tag function. Results can be imported from Excel format.
 
-The plugin was inspired by TobiasBg "WP-Table Reloaded" 
+The plugin was inspired by TobiasBg "WP-Table Reloaded".
+
+The plugin has been tested with PHP 4.4.7.
 
 == Installation ==
 
