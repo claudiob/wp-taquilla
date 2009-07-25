@@ -38,8 +38,8 @@ class Taquilla_Admin {
     var $shown_movies = array();
     var $shortcode = 'movie';
     
-    var $movies = ();
-    var $studios = ();
+    var $movies = null;
+    var $studios = null;
     
 
 
