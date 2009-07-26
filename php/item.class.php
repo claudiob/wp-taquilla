@@ -15,7 +15,12 @@ class Item {
     // Note: most of this function should be declared as ABSTRACT
     // but this is not compatible for PHP_VERSION < 5 
 
-    var $values = array();
+    var $values = array(
+        'id' => null,
+        'post_id' => null,
+        'name' => null,
+    );
+    var $inflect = null;
 
     ####   Properties  ####################################################                                                     
 
@@ -40,9 +45,9 @@ class Item {
             define('ITEM_ABSPATH', WP_PLUGIN_DIR . '/' .
              basename(dirname(__FILE__)) . '/');
 
-        $inflect = new Inflect();
-        $this->classes = $inflect->pluralize($this->class);
-        unset($inflect);
+        $this->inflect = new Inflect();
+        $this->classes = $this->inflect->pluralize($this->class);
+        #unset($inflect);
 
         $this->Class = ucwords($this->class);
         $this->Classes = ucwords($this->classes);
@@ -65,8 +70,17 @@ class Item {
         $this->values = $wpdb->get_row($select, ARRAY_A);
     }
 
-    function save() {
+    function save($add_post = true) {
         global $wpdb;
+        if($add_post) {
+            # First add a post for this movie
+            $cat_id = wp_insert_category(array('cat_name' => $this->Class));
+            $new_post = array('post_status' => 'publish', 'post_content' => '',
+             'post_title' => $wpdb->escape($this->name()),
+             'post_category' => $cat_id);
+            // TODO add custom fields or tags with year, studio, etc.
+            $this->values['post_id'] = wp_insert_post($new_post);            
+        }
         $insert = "INSERT INTO " . $this->table . 
         "(" . implode(",",array_keys($this->values)) . ") VALUES " .
         "(\"" . implode("\",\"", $this->values) . "\") ";
@@ -117,31 +131,38 @@ class Item {
         <div class="inside">
         <table class="taquilla-options">
         <?php foreach($this->values as $k => $v) {
-                switch($action) {
-                    case "edit":
+            if($k == "id" || $k == "post_id")
+                continue;
+            $name = $this->class . "[" . $k . "]";
         ?>
             <tr valign="top">
             <th scope="row">
-            <label for="<?php echo $this->class . "[" . $k . "]"; ?>"><?php _e($this->Class . ' ' . $k, TAQUILLA_DOMAIN); ?>:</label>
+            <label for="<?php echo $name; ?>"><?php _e($this->Class . ' ' . $k, TAQUILLA_DOMAIN); ?>:</label>
             </th>
             <td>
-            <input type="text" name="<?php echo $this->class . "[" . $k . "]"; ?>" id="<?php echo $this->class . "[" . $k . "]"; ?>" value="<?php echo $this->safe_output($v); ?>" style="width:250px" <?php if ($k == "id" || substr($k, -3) == "_id") echo 'readonly="true"'; ?> />
+            <?php
+            if(substr($k, -3) == "_id") {
+                // if the name ends in _id, show a <select> if table exists
+                echo '<select id="' . $name . '" name="' . $name . '">';
+                $join_class = substr($k, 0, -3);
+                $join_class = ucwords($this->inflect->pluralize($join_class));    
+                $collection = new $join_class();
+                // TODO cannot paginate here, so use AJAX autocomplete
+                $collection->select();                    
+                foreach ($collection->items as $item) {
+                    echo '<option' . (($item->id() == $v) ? ' selected="selected"': '') . ' value="' . $item->id() . '" style="width:200px">' . $item->name() . '</option>';
+                    unset($item);
+                    }
+                unset($collection);    
+                echo '</select>';
+#                echo '<input type="hidden" name="' . $this->class . '[' . $k . ']" id="' . $this->class . '[' . $k . ']" value="' . $this->safe_output($v) . '" />';
+#                echo '<input type="text" name="' . $this->class . '_join[' . $k . ']" id="' . $this->class . '[' . $k . ']" value="' . $elem->name() . '" style="width:250px" />';
+            } elseif ($k != "id")
+                echo '<input type="text" name="' . $this->class . '[' . $k . ']" id="' . $this->class . '[' . $k . ']" value="' . $this->safe_output($v) . '" style="width:250px" />';
+            }
+            ?>
             </td>  
             </tr>
-        <?php       break;
-                    case "add":
-                        if (!($k == "id" || substr($k, -3) == "_id")) {   
-        ?>
-            <tr valign="top">
-            <th scope="row"><label for="<?php echo $this->class . "[" . $k . "]"; ?>"><?php _e($this->Class . ' ' . $k, TAQUILLA_DOMAIN); ?>:</label></th>
-            <td><input type="text" name="<?php echo $this->class . "[" . $k . "]"; ?>" id="<?php echo $this->class . "[" . $k . "]"; ?>" value="<?php _e('Enter ' . $this->Class . ' ' . $k, TAQUILLA_DOMAIN); ?>" style="width:250px" /></td>  
-            </tr>
-        <?php    
-                        }
-                    break;
-                }
-            }
-        ?>
         </table>
         </div>
         </div>
@@ -149,8 +170,9 @@ class Item {
         <?php switch($action) {
             case "edit":
         ?>
-            <input type="hidden" name="<?php echo $this->class; ?>[id]" value="<?php echo $this->id(); ?>" />
             <input type="hidden" name="action" value="edit" />
+            <input type="hidden" name="<?php echo $this->class; ?>[id]" value="<?php echo $this->id(); ?>" />
+        <input type="hidden" name="<?php echo $this->class; ?>[post_id]" value="<?php echo $this->values['post_id']; ?>" />
             <input type="submit" name="submit[update]" class="button-primary" value="<?php _e('Update Changes', TAQUILLA_DOMAIN); ?>" />
             <input type="submit" name="submit[save_back]" class="button-primary" value="<?php _e('Save and go back', TAQUILLA_DOMAIN); ?>" />
         <?php
@@ -194,6 +216,8 @@ class Item {
             <th class="check-column" scope="col"><input type="checkbox" /></th>
                 <?php
                 foreach(array_keys($this->values) as $key) {
+                    if(substr($key, -3) == "_id")
+                        $key = ucwords(substr($key, 0, -3));
                 ?>
                 <th scope="col"><?php _e($key, TAQUILLA_DOMAIN); ?></th>
                 <?php } ?>
@@ -201,15 +225,23 @@ class Item {
             </tr>
         <?php
     }
-    
+
     function admin_list_item($bg_style_index = 0) {
         $bg_style = (0 == ($bg_style_index % 2)) ? ' class="alternate"' : '';
         $edit_url = $this->get_action_url(array('action' => 'edit', $this->class . '_id' => $this->id()), false);
         $delete_url = $this->get_action_url(array('action' => 'delete', $this->class . '_id' => $this->id(), 'item' => $this->class), true);
         echo "<tr{$bg_style}>\n";
         echo "\t<th class=\"check-column\" scope=\"row\"><input type=\"checkbox\" name=\"" . $this->class . "s[]\" value=\"" . $this->id() . "\" /></th>";
-        foreach($this->values as $value)
-            echo "<td>{$value}</td>";
+        foreach($this->values as $key => $value) {            
+            if(substr($key, -3) == "_id" && $key != "post_id") {
+                $join_class = substr($key, 0, -3);
+                $join_class = ucwords($join_class);    
+                $item = new $join_class($value);
+                $value = $item->name();
+                unset($item);
+            }
+            echo "<td>" . $value . "</td>";
+        }
         echo "<td><a href=\"{$edit_url}\">" . __('Edit', TAQUILLA_DOMAIN) . "</a>" . " | ";
         echo "<a class=\"delete_" . $this->class . "_link delete\" href=\"{$delete_url}\">" . __('Delete', TAQUILLA_DOMAIN) . "</a></td>\n";
         echo "</tr>\n";
@@ -356,8 +388,10 @@ class Collection {
         if (!$this->table_exists()) {
             $sql = "CREATE TABLE " . $this->table . " (
                     id mediumint(9) NOT NULL auto_increment,
+                    post_id bigint(20) unsigned,
                     name varchar(80) default NULL,
-                    UNIQUE KEY id (id)
+                    UNIQUE KEY id (id),
+                    UNIQUE KEY post_id (post_id)
           	        );";
             dbDelta($sql);       
         }
@@ -452,12 +486,19 @@ class Collection {
     function add_manage_page() {
     // add page, and what happens when page is loaded or shown
         $min_capability = 'publish_posts'; // user needs at least this
-
-        $this->hook = add_posts_page($this->nil->Classes, $this->nil->Classes, $min_capability, 'list_' . $this->nil->classes, array(&$this, 'show_manage_page')); 
+        $menu_position = 7;
+        $menu_page = exists_menu_page($menu_position);
+        if ($menu_page  == null) {
+            $menu_page = 'list_' . $this->nil->classes;
+            $this->hook = my_add_menu_page($this->nil->Classes, $this->nil->Classes, $min_capability, $menu_page, array(&$this, 'show_manage_page'), '', $menu_position);
+        }
+        else
+            $this->hook = add_submenu_page($menu_page, $this->nil->Classes, $this->nil->Classes, $min_capability, 'list_' . $this->nil->classes, array(&$this, 'show_manage_page')); 
         add_action('load-' . $this->hook, array(&$this, 'load_manage_page'));
 
-        $this->hook = add_posts_page($this->nil->Classes, 'Add ' . $this->nil->class, $min_capability, 'add_' . $this->nil->class, array(&$this, 'do_action_add')); 
-        add_action('load-' . $this->hook, array(&$this, 'load_manage_page'));
+        // This works, it's just commented to save space
+        // $this->hook = add_submenu_page($menu_page, $this->nil->Classes, 'Add ' . $this->nil->class, $min_capability, 'add_' . $this->nil->class, array(&$this, 'do_action_add')); 
+        // add_action('load-' . $this->hook, array(&$this, 'load_manage_page'));
     }
 
     function load_manage_page() {
@@ -539,6 +580,44 @@ class Collection {
         load_plugin_textdomain(TAQUILLA_DOMAIN, 'wp-content/plugins/' . $language_directory, $language_directory);
     }
 
+}
+
+###############################################################################
+####                                                                       ####
+####   External functions                                                  ####
+####                                                                       ####
+###############################################################################
+
+# Copied from wp-admin/menu.php, adding the position of the menu
+function my_add_menu_page($page_title, $menu_title, $access_level, $file, $function = '', $icon_url = '', $position=99) {
+	global $menu, $admin_page_hooks, $_registered_pages;
+
+	$file = plugin_basename($file);
+
+	$admin_page_hooks[$file] = sanitize_title($menu_title);
+
+	$hookname = get_plugin_page_hookname($file, '');
+	if (!empty ($function) && !empty ($hookname))
+		add_action($hookname, $function);
+
+	if (empty($icon_url))
+		$icon_url = 'images/generic.png';
+	elseif (is_ssl() && 0 === strpos($icon_url, 'http://'))
+		$icon_url = 'https://' . substr($icon_url, 7);
+
+	$menu[$position] = array ($menu_title, $access_level, $file, $page_title, 'menu-top ' . $hookname, $hookname, $icon_url);
+
+	$_registered_pages[$hookname] = true;
+
+	return $hookname;
+}
+
+function exists_menu_page($position) {
+    global $menu;
+    if (!isset($menu[$position]))
+        return null;
+    else
+        return $menu[$position][2];
 }
 
 

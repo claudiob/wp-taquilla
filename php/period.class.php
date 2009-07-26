@@ -1,6 +1,6 @@
 <?php
 /*
-File Name: Taquilla - Studio Class
+File Name: Taquilla - Period Class
 Plugin URI: 
 Description: This plugin allows you to add box office movies and results in your WordPress posts.
 Version: 0.1
@@ -11,26 +11,32 @@ Author URI:
 if (!class_exists("Item") || !class_exists("Collection"))
     include_once ("item.class.php");
 
-class Studio extends Item {
+class Period extends Item {
 
     var $values = array(
         'id' => null,
         'post_id' => null,
-        'name' => null,
-        'code_edi' => null,
-        'code_mojo' => null
+        'country_id' => null,
+        'year' => null,
+        'week' => null,
+        'date_from' => null,
+        'date_to' => null
     );
 
-    function Studio($studio_id = null) {
-        $this->class = "studio";
-        $this->setup($studio_id);
+    function name() {
+        return $this->values['week'] . '/' . $this->values['year'];
+    }
+
+    function Period($period_id = null) {
+        $this->class = "period";
+        $this->setup($period_id);
     }
 }
 
-class Studios extends Collection {
+class Periods extends Collection {
 
-    function Studios() {
-        $this->Kind = "Studio";
+    function Periods() {
+        $this->Kind = "Period";
         $this->setup();
     }
 
@@ -42,13 +48,16 @@ class Studios extends Collection {
           $sql = "CREATE TABLE " . $this->table . " (
               id mediumint(9) NOT NULL auto_increment,
               post_id bigint(20) unsigned,
-              name varchar(80) default NULL,
-              code_edi varchar(32) default NULL,
-              code_mojo varchar(32) default NULL,
+              country_id mediumint(9),
+              year year(4) default NULL,
+              week smallint(5) unsigned default NULL,
+              date_from date NOT NULL,
+              date_to date NOT NULL,
               UNIQUE KEY id (id),
               UNIQUE KEY post_id (post_id),
-              UNIQUE KEY code_edi (code_edi),
-              UNIQUE KEY code_mojo (code_mojo)
+              KEY country_id (country_id),
+              UNIQUE KEY unique3 (date_from,date_to),
+              UNIQUE KEY unique2 (year,week,country_id)
       	    );";
         dbDelta($sql);       
         }

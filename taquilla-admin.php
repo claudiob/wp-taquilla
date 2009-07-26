@@ -40,6 +40,9 @@ class Taquilla_Admin {
     
     var $movies = null;
     var $studios = null;
+    var $countries = null;
+    var $periods = null;
+    var $results = null;
     
 
 
@@ -70,10 +73,12 @@ class Taquilla_Admin {
         $this->options = $this->default_options;
         $this->options['installed_version'] = $this->plugin_version;
         $this->update_options();
-#        $this->create_db_tables();
 
+        $this->countries->create_table();
         $this->studios->create_table();
         $this->movies->create_table();
+        $this->periods->create_table();
+        $this->results->create_table();
     }
 
     function plugin_update() {
@@ -90,11 +95,12 @@ class Taquilla_Admin {
         load_plugin_textdomain(TAQUILLA_DOMAIN, 'wp-content/plugins/' . $language_directory, $language_directory);
     }
 
-    function instantiate_class($class, $file) {
+    function load_instance($class, $file) {
         if (!class_exists($class)) {
             include_once (TAQUILLA_ABSPATH . 'php/' . $file);
-            if (class_exists($class))
-                return new $class;
+        }
+        if (class_exists($class)) {
+            return new $class;
         }
     }
 
@@ -107,9 +113,12 @@ class Taquilla_Admin {
 
     function Taquilla_Admin() { 
 
-        $this->movies = $this->instantiate_class('Movies', 'movie.class.php');
-        $this->studios = $this->instantiate_class('Studios', 'studio.class.php');
-
+        $this->movies = $this->load_instance('Movies', 'movie.class.php');
+        $this->periods = $this->load_instance('Periods', 'period.class.php');
+        $this->results = $this->load_instance('Results', 'result.class.php');
+        $this->countries = $this->load_instance('Countries', 'country.class.php');
+        $this->studios = $this->load_instance('Studios', 'studio.class.php');
+        
         if (is_admin()) {
             // ADMIN mode
             
@@ -236,107 +245,6 @@ class Taquilla_Admin {
         update_option($this->optionname['options'], $this->options);
     }
         
-    function create_db_tables() {
-    // create the tables in the MySql database
-    // See http://codex.wordpress.org/Creating_Tables_with_Plugins
-        global $wpdb;
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-
-        $table_name = $wpdb->prefix . "tq_studios";
-        if($wpdb->get_var("show tables like '$table_name'") != $table_name) {
-          // TODO unify the integer format of ID keys
-          $sql = "CREATE TABLE " . $table_name . " (
-              id mediumint(9) NOT NULL auto_increment,
-              name varchar(80) default NULL,
-              code_edi varchar(32) default NULL,
-              code_mojo varchar(32) default NULL,
-              UNIQUE KEY id (id),
-              UNIQUE KEY code_edi (code_edi),
-              UNIQUE KEY code_mojo (code_mojo)
-      	    );";
-        dbDelta($sql);       
-        }
-
-        // TODO: title_edi is not guaranteed to be unique, check this
-        // TODO: title_edi is quite long to be used as a key
-        // TODO: title_edi can be null if there is no Edi > then broken key!
-        $table_name = $wpdb->prefix . "tq_movies";
-        if($wpdb->get_var("show tables like '$table_name'") != $table_name) {
-          $sql = "CREATE TABLE " . $table_name . " (
-              id mediumint(9) NOT NULL auto_increment,
-              studio_id mediumint(9),
-              post_id bigint(20) unsigned,
-              title varchar(80) default NULL,
-              title_edi varchar(80) default NULL,
-              title_original varchar(80) default NULL,
-              title_original_edi varchar(80) default NULL,
-              minutes smallint(5) unsigned default NULL,
-              year year(4) default NULL,
-              budget mediumint(8) unsigned default NULL,
-              UNIQUE KEY id (id),
-              UNIQUE KEY studio_id (studio_id),
-              KEY title_edi (title_edi),
-              UNIQUE KEY post_id (post_id)
-      	    );";
-        // TODO: should be UNIQUE KEY title_edi (title_edi) ?
-        dbDelta($sql);       
-        }
-
-        $table_name = $wpdb->prefix . "tq_countries";
-        if($wpdb->get_var("show tables like '$table_name'") != $table_name) {
-          $sql = "CREATE TABLE " . $table_name . " (
-              id mediumint(9) NOT NULL auto_increment,
-              name varchar(80) default NULL,
-              UNIQUE KEY id (id)
-      	    );";
-        dbDelta($sql);       
-        }
-
-        $table_name = $wpdb->prefix . "tq_periods";
-        if($wpdb->get_var("show tables like '$table_name'") != $table_name) {
-          $sql = "CREATE TABLE " . $table_name . " (
-              id mediumint(9) NOT NULL auto_increment,
-              country_id mediumint(9),
-              year year(4) default NULL,
-              week smallint(5) unsigned default NULL,
-              date_from date NOT NULL,
-              date_to date NOT NULL,
-              UNIQUE KEY id (id),
-              KEY country_id (country_id),
-              UNIQUE KEY unique3 (date_from,date_to),
-              UNIQUE KEY unique2 (year,week,country_id)
-      	    );";
-        dbDelta($sql);       
-        }
-
-        $table_name = $wpdb->prefix . "tq_results";
-        if($wpdb->get_var("show tables like '$table_name'") != $table_name) {
-          $sql = "CREATE TABLE " . $table_name . " (
-              id mediumint(9) NOT NULL auto_increment,
-              movie_id mediumint(9),
-              period_id mediumint(9),
-              position smallint(5) unsigned default NULL,
-              periods smallint(5) unsigned default NULL,
-              copies int(20) unsigned default NULL,
-              gross int(20) unsigned default NULL,
-              gross_mean int(20) unsigned default NULL,
-              gross_cume int(20) unsigned default NULL,
-              gross_delta decimal(8,2) default NULL,
-              audience int(20) unsigned default NULL,
-              audience_mean int(20) unsigned default NULL,
-              audience_cume int(20) unsigned default NULL,
-              audience_delta decimal(8,2) default NULL,
-              UNIQUE KEY id (id),
-              KEY movie_id (movie_id),
-              KEY period_id (period_id),
-              UNIQUE KEY unique2 (movie_id,period_id),
-              UNIQUE KEY unique3 (period_id, position)
-      	    );";
-        dbDelta($sql);       
-        }
-        return $table_name;
-    }
-
 
 
     // TODO combine with load_movie in a unique function
@@ -490,7 +398,7 @@ class Taquilla_Admin {
 #                    $message = __ngettext('Movie deleted successfully.', 'Movies deleted successfully.', count($_POST['movies']), TAQUILLA_DOMAIN);
 #                    break;
 #                case 'wp_movie_import': // see do_action_import for explanations
-#                    $this->import_instance = $this->instantiate_class('WP_Boxoffice_Import', 'taquilla-import.class.php');
+#                    $this->import_instance = $this->load_instance('WP_Boxoffice_Import', 'taquilla-import.class.php');
 #                    $this->import_instance->import_format = 'wp_movie';
 #                    foreach ($_POST['movies'] as $movie_id) {
 #                        $this->import_instance->wp_movie_id = $movie_id;
@@ -555,7 +463,7 @@ class Taquilla_Admin {
     }
 
     function do_action_import() {
-        $this->import_instance = $this->instantiate_class('Taquilla_Import', 'taquilla-import.class.php');
+        $this->import_instance = $this->load_instance('Taquilla_Import', 'taquilla-import.class.php');
         if (isset($_POST['submit']) && isset($_POST['import_from'])) {
             check_admin_referer($this->get_nonce('import'));
 
@@ -730,7 +638,7 @@ class Taquilla_Admin {
 ###############################################################################
 
 # Copied from wp-admin/menu.php, adding the position of the menu
-function my_add_menu_page($page_title, $menu_title, $access_level, $file, $function = '', $icon_url = '', $position=99) {
+function my_add_menu_page2($page_title, $menu_title, $access_level, $file, $function = '', $icon_url = '', $position=99) {
 	global $menu, $admin_page_hooks, $_registered_pages;
 
 	$file = plugin_basename($file);

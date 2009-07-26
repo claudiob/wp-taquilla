@@ -35,35 +35,6 @@ class Movie extends Item {
         $this->setup($movie_id);
     }
 
-    
-    ####   Redefine MySql functions  ##########################################                                                     
-
-    function save() {
-        global $wpdb;
-        # First add a post for this movie
-		$post_category = array();
-		$wp_cats = get_categories(array('hide_empty' => false));
-		foreach($wp_cats as $cat) {
-			if(strtolower($cat->name) == "movie") {
-				array_push($post_category, $cat->term_id);
-    			break;
-			}
-		}
-		// TODO else add a new category called movie
-        $new_post = array('post_status' => 'publish', 'post_content' => '',
-         'post_title' => $wpdb->escape($this->name()),
-         'post_category' => $post_category);
-        // TODO add custom fields or tags with year, studio, etc.
-        $this->values['post_id'] = wp_insert_post($new_post);
-
-        # Then add the movie to the table
-        $insert = "INSERT INTO " . $this->table . 
-        "(" . implode(",",array_keys($this->values)) . ") VALUES " .
-        "(\"" . implode("\",\"", $this->values) . "\") ";
-        // TODO Add $wpdb->escape 
-        $wpdb->query($insert);
-        $this->values['id'] = mysql_insert_id($wpdb->dbh);
-    }
 }
 
 class Movies extends Collection {

@@ -1,6 +1,6 @@
 <?php
 /*
-File Name: Taquilla - Studio Class
+File Name: Taquilla - Country Class
 Plugin URI: 
 Description: This plugin allows you to add box office movies and results in your WordPress posts.
 Version: 0.1
@@ -11,26 +11,18 @@ Author URI:
 if (!class_exists("Item") || !class_exists("Collection"))
     include_once ("item.class.php");
 
-class Studio extends Item {
+class Country extends Item {
 
-    var $values = array(
-        'id' => null,
-        'post_id' => null,
-        'name' => null,
-        'code_edi' => null,
-        'code_mojo' => null
-    );
-
-    function Studio($studio_id = null) {
-        $this->class = "studio";
-        $this->setup($studio_id);
+    function Country($country_id = null) {
+        $this->class = "country";
+        $this->setup($country_id);
     }
 }
 
-class Studios extends Collection {
+class Countries extends Collection {
 
-    function Studios() {
-        $this->Kind = "Studio";
+    function Countries() {
+        $this->Kind = "Country";
         $this->setup();
     }
 
@@ -43,12 +35,8 @@ class Studios extends Collection {
               id mediumint(9) NOT NULL auto_increment,
               post_id bigint(20) unsigned,
               name varchar(80) default NULL,
-              code_edi varchar(32) default NULL,
-              code_mojo varchar(32) default NULL,
               UNIQUE KEY id (id),
-              UNIQUE KEY post_id (post_id),
-              UNIQUE KEY code_edi (code_edi),
-              UNIQUE KEY code_mojo (code_mojo)
+              UNIQUE KEY post_id (post_id)
       	    );";
         dbDelta($sql);       
         }
