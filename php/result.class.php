@@ -13,8 +13,6 @@ if (!class_exists("Item"))
 
 class Result extends Item {
 
-        
-
     function name($item = null) { 
         return $this->get("movie_id", $item) . "/" . $this->get("movie_id", $item); 
     }
@@ -62,7 +60,6 @@ class Result extends Item {
 
 
     function load_from_excel($tmp_file) {
-
         require_once 'excel_reader.php';
         $reader = new Spreadsheet_Excel_Reader();
         $reader->setOutputEncoding('CP1251');

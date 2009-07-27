@@ -14,6 +14,15 @@
 /* overwrite 980px max-width in WP < 2.7 */
 div.wrap { max-width: 100%!important; }
 
-.widefat tbody th.check-column {
-	padding: 0!important;
+#icon-list_mo {
+	background: transparent url(../images/icons32.png) no-repeat -11px -5px;
+}
+
+#adminmenu #menu-items div.wp-menu-image {
+	background: transparent url("../images/menu-vs.png") no-repeat scroll -1px -33px;
+}
+
+#adminmenu #menu-items:hover div.wp-menu-image,
+#adminmenu #menu-items.wp-has-current-submenu div.wp-menu-image {
+	background: transparent url("../images/menu-vs.png") no-repeat scroll -1px -1px;
 }

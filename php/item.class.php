@@ -171,8 +171,12 @@ class Item {
         $this->find(array('id' => $item_id));
     }
 
+    function clear_items() {
+         $this->items = array();   
+    }
+
     function find_or_create($data, $save = true) {
-        $this->items = array();        
+        $this->clear_items();        
         $this->find($data);
         if (!$this->has_items()) {
             $this->items[] = $data;
@@ -509,7 +513,10 @@ class Item {
      }
      else
          $this->hook = add_submenu_page($menu_page, $this->Classes, $this->Classes, $min_capability, 'list_' . $this->classes, array(&$this, 'show_manage_page')); 
+
      add_action('load-' . $this->hook, array(&$this, 'load_manage_page'));
+     // Note: CSS are loaded here to have the admin tab icon
+     $this->add_manage_page_css();
 
      // This works, it's just commented to save space
      // $this->hook = add_submenu_page($menu_page, $this->Classes, 'Add ' . $this->class, $min_capability, 'add_' . $this->class, array(&$this, 'do_action_add')); 
@@ -521,7 +528,7 @@ class Item {
      //$this->add_manage_page_js();
      add_action('admin_footer', array(&$this, 'add_manage_page_js')); 
      // can be put in footer, jQuery will be loaded anyway
-     $this->add_manage_page_css();
+     # $this->add_manage_page_css();
 
      // init language support
      $this->init_language_support();
@@ -596,11 +603,12 @@ class Item {
     }
 
     function print_page_header($text = 'Taquilla') {
-        echo <<<TEXT
-<div class='wrap'>
-<h2>{$text}</h2>
-<div id='poststuff'>
-TEXT;
+        ?>
+        <div class='wrap'>
+        <?php screen_icon(); ?>
+        <h2><?php echo $text; ?></h2>
+        <div id='poststuff'>
+        <?php
     }
 
     function print_page_footer() {
@@ -665,7 +673,7 @@ function my_add_menu_page($page_title, $menu_title, $access_level, $file, $funct
 	elseif (is_ssl() && 0 === strpos($icon_url, 'http://'))
 		$icon_url = 'https://' . substr($icon_url, 7);
 
-	$menu[$position] = array ($menu_title, $access_level, $file, $page_title, 'menu-top ' . $hookname, $hookname, $icon_url);
+	$menu[$position] = array ($menu_title, $access_level, $file, $page_title, 'menu-top', 'menu-items');
 
 	$_registered_pages[$hookname] = true;
 
@@ -680,6 +688,7 @@ function exists_menu_page($position) {
         return $menu[$position][2];
 }
 
+$menu[5] = array( __('Posts'), 'edit_posts', 'edit.php', '', 'open-if-no-js menu-top', 'menu-posts', 'div' );
 
 
 ?>

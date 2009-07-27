@@ -118,16 +118,15 @@ class Taquilla_Admin {
         $this->studio = $this->load_instance('Studio', 'studio.class.php');
         $this->period = $this->load_instance('Period', 'period.class.php');
         $this->country = $this->load_instance('Country', 'country.class.php');
-        
+
         if (is_admin()) {
-            // ADMIN mode
             
             // check if tables exist
             if (!$this->movie->table_exists())
                 $this->plugin_install();
+
+            // check if some redirection has to be performed
             
-
-
             // add JS to add button to editor on these pages
             $pages_with_editor_button = array('post.php', 'post-new.php', 'page.php', 'page-new.php');
             foreach ($pages_with_editor_button as $page)
