@@ -113,6 +113,7 @@ class Studio extends Item {
         }
     }
 
+
     /**
      * Copied from part of edit.php, Edit Posts Administration Panel.
      *
@@ -276,6 +277,8 @@ class Studio extends Item {
       <?php
       if ( empty($locked_post_status) ) :
       $status_links = array();
+      // TODO: Create a wp_count_items that is like wp_count_posts but
+      // limited to items of a certain category, to correct this $num_posts
       $num_posts = wp_count_posts( 'post', 'readable' );
       $total_posts = array_sum( (array) $num_posts );
       $class = empty( $_GET['post_status'] ) ? ' class="current"' : '';
@@ -429,7 +432,7 @@ class Studio extends Item {
 
       <?php } else { // have_posts() ?>
       <div class="clear"></div>
-      <p><?php _e('No posts found') ?></p>
+      <p><?php _e('No ' . $this->classes . ' found') ?></p>
       <?php } ?>
       </form>
 
