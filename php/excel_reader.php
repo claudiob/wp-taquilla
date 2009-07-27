@@ -382,8 +382,10 @@ class Spreadsheet_Excel_Reader
         if($res === false) {
             // check error code
             if($this->_ole->error == 1) {
+                echo "errrror";
             // bad file
-                die('The filename ' . $sFileName . ' is not readable');
+            //    die('The filename ' . $sFileName . ' is not readable');
+                return false;
             }
             // check other error codes here (eg bad fileformat, etc...)
         }
@@ -420,6 +422,7 @@ class Spreadsheet_Excel_Reader
     //echo "data =".$this->data;
         //$this->readRecords();
         $this->_parse();
+        return true;
     }
 
 

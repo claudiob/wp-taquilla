@@ -38,13 +38,12 @@ class Taquilla_Admin {
     var $shown_movies = array();
     var $shortcode = 'movie';
     
-    var $movies = null;
-    var $studios = null;
-    var $countries = null;
-    var $periods = null;
-    var $results = null;
+    var $movie = null;
+    var $studio = null;
+    var $country = null;
+    var $period = null;
+    var $result = null;
     
-
 
     ###########################################################################
     ####                                                                   ####
@@ -74,11 +73,12 @@ class Taquilla_Admin {
         $this->options['installed_version'] = $this->plugin_version;
         $this->update_options();
 
-        $this->countries->create_table();
-        $this->studios->create_table();
-        $this->movies->create_table();
-        $this->periods->create_table();
-        $this->results->create_table();
+        $this->country->create_table();
+        $this->studio->create_table();
+        $this->movie->create_table();
+        $this->period->create_table();
+        $this->result->create_table();
+
     }
 
     function plugin_update() {
@@ -112,18 +112,18 @@ class Taquilla_Admin {
     ###########################################################################
 
     function Taquilla_Admin() { 
-
-        $this->movies = $this->load_instance('Movies', 'movie.class.php');
-        $this->periods = $this->load_instance('Periods', 'period.class.php');
-        $this->results = $this->load_instance('Results', 'result.class.php');
-        $this->countries = $this->load_instance('Countries', 'country.class.php');
-        $this->studios = $this->load_instance('Studios', 'studio.class.php');
+        // The order of these calls is the order of tabs in admin panel
+        $this->movie = $this->load_instance('Movie', 'movie.class.php');
+        $this->result = $this->load_instance('Result', 'result.class.php');
+        $this->studio = $this->load_instance('Studio', 'studio.class.php');
+        $this->period = $this->load_instance('Period', 'period.class.php');
+        $this->country = $this->load_instance('Country', 'country.class.php');
         
         if (is_admin()) {
             // ADMIN mode
             
             // check if tables exist
-            if (!$this->movies->table_exists())
+            if (!$this->movie->table_exists())
                 $this->plugin_install();
             
 

@@ -8,36 +8,19 @@ Author: Claudio Baccigalupo
 Author URI: 
 */
 
-if (!class_exists("Item") || !class_exists("Collection"))
+if (!class_exists("Item"))
     include_once ("item.class.php");
 
 class Period extends Item {
 
-    var $values = array(
-        'id' => null,
-        'post_id' => null,
-        'country_id' => null,
-        'year' => null,
-        'week' => null,
-        'date_from' => null,
-        'date_to' => null
-    );
-
-    function name() {
-        return $this->values['week'] . '/' . $this->values['year'];
+    function name($item = null) { 
+        return $this->get("week", $item) . "/" . $this->get("year", $item); 
     }
 
     function Period($period_id = null) {
         $this->class = "period";
+        $this->columns = array('id', 'post_id', 'country_id', 'year', 'week', 'date_from', 'date_to');
         $this->setup($period_id);
-    }
-}
-
-class Periods extends Collection {
-
-    function Periods() {
-        $this->Kind = "Period";
-        $this->setup();
     }
 
     function create_table() {
@@ -63,6 +46,8 @@ class Periods extends Collection {
         }
         return $this->table;
     }
+
 }
+
 
 ?>

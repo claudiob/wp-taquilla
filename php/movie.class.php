@@ -8,40 +8,19 @@ Author: Claudio Baccigalupo
 Author URI: 
 */
 
-if (!class_exists("Item") || !class_exists("Collection"))
+if (!class_exists("Item"))
     include_once ("item.class.php");
 
 class Movie extends Item {
 
-    var $values = array(
-        'id' => null,
-        'studio_id' => null,
-        'post_id' => null,
-        'title' => null,
-        'title_edi' => null,
-        'title_original' => null,
-        'title_original_edi' => null,
-        'minutes' => null,
-        'year' => null,
-        'budget' => null
-    );
-
-    function name() {
-        return $this->safe_output($this->values['title']);
-    }
-
     function Movie($movie_id = null) {
         $this->class = "movie";
+        $this->columns = array('id','studio_id','post_id', 'title', 'title_edi', 'title_original', 'title_original_edi', 'minutes', 'year', 'budget');
         $this->setup($movie_id);
     }
 
-}
-
-class Movies extends Collection {
-
-    function Movies() {
-        $this->Kind = "Movie";
-        $this->setup();
+    function name($item = null) { 
+        return $this->get("title", $item) . "/" . $this->get("title_edi", $item); 
     }
 
     // TODO: should take the column values from $this->columns !
@@ -70,6 +49,8 @@ class Movies extends Collection {
         }
         return $this->table;
     }
+
 }
+
 
 ?>

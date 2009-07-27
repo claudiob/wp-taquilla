@@ -8,30 +8,19 @@ Author: Claudio Baccigalupo
 Author URI: 
 */
 
-if (!class_exists("Item") || !class_exists("Collection"))
+if (!class_exists("Item"))
     include_once ("item.class.php");
 
 class Studio extends Item {
 
-    var $values = array(
-        'id' => null,
-        'post_id' => null,
-        'name' => null,
-        'code_edi' => null,
-        'code_mojo' => null
-    );
+    function name($item = null) { 
+        return $this->get("name", $item) . "/" . $this->get("code_edi", $item); 
+    }
 
     function Studio($studio_id = null) {
         $this->class = "studio";
+        $this->columns = array('id', 'post_id', 'name', 'code_edi', 'code_mojo');
         $this->setup($studio_id);
-    }
-}
-
-class Studios extends Collection {
-
-    function Studios() {
-        $this->Kind = "Studio";
-        $this->setup();
     }
 
     function create_table() {
