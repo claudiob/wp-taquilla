@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: Taquilla - Class containing all the admin functions.
+File Name: Taquilla - Class containing all the admin functions.
 Plugin URI: 
 Description: This plugin allows you to add box office movies and results in your WordPress posts.
 Version: 0.1

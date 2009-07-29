@@ -15,7 +15,6 @@ class Item {
     // Note: most of this function should be declared as ABSTRACT
     // but this is not compatible for PHP_VERSION < 5 
 
-    var $columns = array();
     var $items = array();
     var $inflect = null;
     var $import = null;
@@ -92,7 +91,7 @@ class Item {
             $cat_id = wp_insert_category(array('cat_name' => $this->Class));
             $new_post = array('post_status' => 'publish', 'post_content' => '',
                  'post_title' => $wpdb->escape($this->name()),
-                 'post_category' => $cat_id);
+                 'post_category' => array($cat_id));
             $aa = wp_insert_post($new_post, true); 
             if ( is_wp_error($aa) )
                echo $aa->get_error_message();
@@ -108,6 +107,8 @@ class Item {
             $this->items[0]['id'] = mysql_insert_id($wpdb->dbh);
 #       }
     }
+
+
 
     function array_to_where($arr) {
         $where = array();
